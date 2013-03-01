@@ -1,0 +1,17 @@
+MATLABROOT=/media/MyDrive/College/Matlab_Installation
+CC=g++
+CFLAG= -std=c++11 -Wall -m32 -O3 -I$(MATLABROOT)/extern/include -I"/opt/AMDAPP/include" $(SRC) $(LIBS) -o $(EXE) 
+MEXFLAG= -std=c++11 -m32 -shared -DMATLAB_MEX_FILE -I$(MATLABROOT)/extern/include -I"/opt/AMDAPP/include" $(LIBS) 
+
+LIBS= -L$(MATLABROOT)/bin/glnx86 -L/opt/AMDAPP/lib/x86/ -L$(MATLABROOT)/extern/lib/glnx86 -lOpenCL -lmex -lmx -lmwlapack -lmwblas -leng
+EXE=test.exe
+MEXTGT=OpenCLMex
+SRC=OpenCLMexWrapper.cpp OpenCLWrapper.cpp
+MEXSRC=OpenCLMexWrapper.cpp OpenCLWrapper.cpp
+all: $(MEXTGT)
+
+$(MEXTGT): $(MEXSRC)
+	$(CC) -c $(MEXFLAG) OpenCLMexWrapper.cpp -o OpenCLMexWrapper.o 
+	$(CC) -c $(MEXFLAG) OpenCLWrapper.cpp -o OpenCLWrapper.o 
+	$(CC) OpenCLMexWrapper.o OpenCLWrapper.o $(MEXFLAG) -o $(MEXTGT).mexglx
+	
