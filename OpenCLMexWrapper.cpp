@@ -148,7 +148,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 				if(i < scalarCount){
 					if(mxIsNumeric(c) && mxGetN(c) == 1 && mxGetM(c) == 1){
 						kernArgs.push_back(kernelArgument(*e,mxGetData(c),mxGetElementSize(c)));
-						mexPrintf("kernel arg data : %f\n",*((float*)kernArgs[i].data));
+						mexPrintf("kernel arg data : %d\n",*((int*)kernArgs[i].data));
 					}else{
 						mexPrintf("Scalar input expected");
 					}
@@ -175,7 +175,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 						memFlags |= CL_MEM_ALLOC_HOST_PTR;
 
 					if(flag & 2)
-						outputBufferIdx.push_back(make_tuple(i,mxGetN(c)*mxGetM(c),mxGetClassID(c)));
+						outputBufferIdx.push_back(make_tuple(i-scalarCount,mxGetN(c)*mxGetM(c),mxGetClassID(c)));
 
 					mexPrintf("pointer: %p size: %d\n",mxGetData(c),mxGetN(c)*mxGetM(c)*mxGetElementSize(c));
 					mexPrintf("%f %d %d %p\n",flags, flag,mxGetElementSize(c),mxGetData(c));
@@ -187,6 +187,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			Run(static_cast<cl_uint>(dimensionsCount), threadDimensions, kernArgs);
 			for(int i=0; i<outputBufferIdx.size();i++){
 				plhs[i] = mxCreateNumericMatrix(get<1>(outputBufferIdx[i]),1,  get<2>(outputBufferIdx[i]), mxREAL);
+				// mexPrintf("Before Read: %d %d\n",kernArgs[get<0>(outputBufferIdx[i])].size,get<0>(outputBufferIdx[i]));
 				void *ptr = mxGetData(plhs[i]);
 				kernArgs[get<0>(outputBufferIdx[i])].readBufferFromDevice(ptr, false);
 			}
